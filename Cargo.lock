@@ -540,7 +540,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gpt-cli"
+name = "gptask"
 version = "0.1.0"
 dependencies = [
  "bat",
