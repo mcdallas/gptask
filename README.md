@@ -21,3 +21,4 @@ combine with mdcat to format markdown and code snippets
 ``` bash
 ask() { gptask "$@" | mdcat }
 ```
+![image](https://user-images.githubusercontent.com/15388116/222921902-649f02a6-af1e-4a10-8448-71eea0897e5a.png)
