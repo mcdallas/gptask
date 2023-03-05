@@ -6,23 +6,22 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_str, Value};
 use std::io::Read;
 use std::error::Error;
+use crate::util::ContextManager;
 
 const OPENAI_API_URL: &str = "https://api.openai.com/v1/chat/completions";
 const OPENAI_MODEL: &str = "gpt-3.5-turbo";
-const MAX_TOKENS: u32 = 4097;
-// const TEMPERATURE: f32 = 0.2;
 
 type BoxResult<T> = Result<T, Box<dyn Error>>;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[allow(non_camel_case_types)]
-enum Role{
+pub enum Role{
     user,
     system,
     assistant,
 }
-#[derive(Serialize, Deserialize, Debug)]
-struct Message{
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Message{
     role: Role,
     content: String,
 }
@@ -30,8 +29,6 @@ struct Message{
 #[derive(Serialize, Deserialize, Debug)]
 struct Prompt {
     model: String,
-    // temperature: f32,
-    max_tokens: u32,
     messages: Vec<Message>,
 }
 
@@ -50,26 +47,29 @@ impl GPTClient {
 
     pub fn prompt(&self, prompt: String) -> BoxResult<String> {
         let behavior = String::from("You will not include any boilerplate in your answers");
-        let prompt_length = (prompt.len() + behavior.len()) as u32;
-        if prompt_length >= MAX_TOKENS {
-            return Err(format!("Prompt cannot exceed length of {} characters", MAX_TOKENS - 1).into());
-        }
 
+        let manager = ContextManager::new();
 
-        let messages = vec![
+        let mut messages = vec![
             Message{
                 role: Role::system,
                 content: behavior,
             },
-
-            Message{
-                role: Role::user,
-                content: prompt,
-            },
         ];
 
+        messages.extend(manager.read_context());
+
+        let msg = Message{
+            role: Role::user,
+            content: prompt,
+        };
+
+        let question = msg.clone();
+        messages.push(msg);
+
+        println!("{:?}", messages);
+
         let p = Prompt {
-            max_tokens: MAX_TOKENS - prompt_length,
             model: String::from(OPENAI_MODEL),
             messages,
         };
@@ -94,9 +94,18 @@ impl GPTClient {
         let json_object: Value = from_str(&response_body)?;
         let answer = json_object["choices"][0]["message"]["content"].as_str();
 
-        match answer {
-            Some(a) => Ok(String::from(a)),
-            None => Err(format!("JSON parse error: {response_body}").into()),
-        }
+        let content = match answer {
+            Some(a) => String::from(a),
+            None => return Err(format!("JSON parse error: {response_body}").into()),
+        };
+
+        let response = Message {
+            role: Role::assistant,
+            content: content.clone(),
+        };
+
+        manager.write_context(&[question, response]);
+
+        Ok(content)
     }
 }

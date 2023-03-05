@@ -1,4 +1,6 @@
 pub mod gpt;
+pub mod util;
+
 
 fn main() {
     let mut args: Vec<_> = std::env::args().collect();
