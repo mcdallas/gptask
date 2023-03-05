@@ -3,10 +3,10 @@ use std::{fs, io};
 
 use std::env::temp_dir;
 use std::path::{Path, PathBuf};
-use crate::gpt::{Role, Message};
+use crate::gpt::Message;
 
 const TMP_FILE: &str = "gptask.json";
-const TTL_ENV_VAR: &str = "GPTASK_TTL";
+const TTL_ENV_VAR: &str = "GPTASK_TTL_SECONDS";
 const DEFAULT_TTL_SECONDS: u64 = 15 * 60;
 
 pub fn get_tmp_file() -> PathBuf {
@@ -70,6 +70,7 @@ impl ContextManager {
         Ok(messages)    
     }
 
+    #[allow(unused_must_use)]
     pub fn read_context(&self) -> Vec<Message> {
         match self.should_load_context() {
             true => match self.read_tmp_file() {
@@ -82,7 +83,7 @@ impl ContextManager {
             },
         }
     }
-
+    #[allow(unused_must_use)]
     pub fn write_context(&self, messages: &[Message]) {
 
         let mut file = fs::OpenOptions::new().append(true).open(&self.path).unwrap();

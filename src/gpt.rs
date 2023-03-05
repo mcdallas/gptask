@@ -67,7 +67,6 @@ impl GPTClient {
         let question = msg.clone();
         messages.push(msg);
 
-        println!("{:?}", messages);
 
         let p = Prompt {
             model: String::from(OPENAI_MODEL),
