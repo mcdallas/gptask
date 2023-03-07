@@ -31,4 +31,5 @@ Combine with mdcat to format markdown and code snippets:
 ``` bash
 ask() { gptask "$@" | mdcat }
 ```
-![image](https://user-images.githubusercontent.com/15388116/222921902-649f02a6-af1e-4a10-8448-71eea0897e5a.png)
+![image](https://user-images.githubusercontent.com/15388116/223573359-f24046a3-1b23-422a-9cb2-b226d43611a3.png)
+
